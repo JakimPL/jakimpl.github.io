@@ -1,1 +1,0 @@
-# jakimpl.github.io

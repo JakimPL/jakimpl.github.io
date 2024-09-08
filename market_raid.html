@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Raid Calculator</title>
+    <link rel="stylesheet" href="css/market_raid.css">
+    <script src="js/algorithm.js"></script>
+    <script src="js/market_raid.js"></script>
+    <script src="js/data_handler.js"></script>
+    <script src="js/units.js"></script>
+    <script src="js/drag.js"></script>
+</head>
+<body>
+
+<div class="top-buttons">
+    <button onclick="exportData()">Export</button>
+    <input type="file" id="importFile" style="display:none;" onchange="importData(event)">
+    <button onclick="document.getElementById('importFile').click()">Import</button>
+</div>
+
+<div class="panel">
+    <div class="section" id="oreIncomesSection">
+        <h3>Ore Incomes</h3>
+        <div id="oreIncomesContainer"></div>
+        <button class="button" onclick="addOreIncome()">Add Ore Income</button>
+    </div>
+
+    <div class="section" id="recipesSection">
+        <h3>Recipes</h3>
+        <div id="recipesContainer"></div>
+        <button class="button" onclick="addRecipe()">Add Recipe</button>
+    </div>
+</div>
+
+<div class="bottom-section">
+    <div class="input-row">
+        <label for="selectedItem">Select Item</label>
+        <select class="bottom-panel" id="selectedItem"></select>
+    </div>
+    <div class="input-row">
+        <label for="numSmelters">Smelters</label>
+        <input class="bottom-panel" type="number" id="numSmelters" value="1">
+    </div>
+    <div class="input-row">
+        <label for="numCrafters">Crafters</label>
+        <input class="bottom-panel" type="number" id="numCrafters" value="1">
+    </div>
+    <button class="button" onclick="calculateMarketRaid()">Calculate</button>
+
+    <div class="result success" id="resultContainer" style="display:none;">
+        <label>Quantity:</label>
+        <span id="quantity">0</span>
+        <br/>
+        <label>Value:</label>
+        <span id="value">₩0</span>
+        <br/>
+        <label>Average active Smelters:</label>
+        <span id="avgSmelters">0</span>
+        <br/>
+        <label>Average active Crafters:</label>
+        <span id="avgCrafters">0</span>
+    </div>
+
+    <div class="result error" id="errorContainer" style="display:none;">
+        <span id="errorMessage">Error: Invalid input values.</span>
+    </div>
+
+    <div class="bottleneck-container" id="bottleneckContainer" style="display:none;">
+        <h3>Resource Bottlenecks</h3>
+        <canvas id="bottleneckTimeline"</canvas>
+    </div>
+</div>
+
+<script>
+    const defaultOres = [
+        'Copper', 'Tin', 'Iron', 'Zinc', 'Nickel', 'Lead', 'Silicon',
+        'Aluminum', 'Silver', 'Gold', 'Platinum', 'Titanium', 'Thorium',
+        'Neodymium', 'Chromium', 'Uranium', 'Lanthanum', 'Chase', 'Samarium',
+        'Terbium', 'Erbium', 'Yttrium', 'Dysprosium', 'Unobtanium'
+    ];
+
+    defaultOres.forEach(ore => {
+        addOreIncome();
+        const oreRow = document.querySelector('#oreIncomesContainer .input-row:last-child');
+        oreRow.querySelector('.ore-name').value = ore;
+        oreRow.querySelector('.ore-amount').value = (ore == 'Copper' ? '132' : '');
+    });
+
+    const defaultRecipes = [
+        {
+            name: 'Copper Bar',
+            producer: 'Smelter',
+            time: '9',
+            sellPrice: '27',
+            requirements: [
+                {name: 'Copper', quantity: '297'}
+            ]
+        },
+        {
+            name: 'Copper Wire',
+            producer: 'Crafter',
+            time: '65',
+            sellPrice: '325K',
+            requirements: [
+                {name: 'Copper Bar', quantity: '10'}
+            ]
+        },
+    ];
+
+    defaultRecipes.forEach(recipe => {
+        addRecipe();
+        const recipeCard = document.querySelector('#recipesContainer .recipe-card:last-child');
+        recipeCard.querySelector('.recipe-name').value = recipe.name;
+        recipeCard.querySelector('.recipe-producer').value = recipe.producer;
+        recipeCard.querySelector('.recipe-time').value = recipe.time;
+        recipeCard.querySelector('.recipe-sell-price').value = recipe.sellPrice;
+
+        const requirementsContainer = recipeCard.querySelector('.requirementsContainer');
+        requirementsContainer.innerHTML = '';
+
+        recipe.requirements.forEach(req => {
+            addRequirement(recipeCard.querySelector('.button'));
+            const requirementRow = recipeCard.querySelector('.requirementsContainer .requirement-row:last-child');
+            requirementRow.querySelector('.requirement-name').value = req.name;
+            requirementRow.querySelector('.requirement-quantity').value = req.quantity;
+        });
+    });
+
+    document.getElementById('numSmelters').value = '4';
+    document.getElementById('numCrafters').value = '2';
+
+    window.addEventListener('resize', adjustCanvasSize);
+    window.addEventListener('load', adjustCanvasSize);
+
+    updateItemList();
+    reattachDragEvents();
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSessionData();
+        attachInputListeners();
+    });
+
+</script>
+</body>
+</html>
