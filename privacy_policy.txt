@@ -1,0 +1,5 @@
+**Privacy Policy for Warzone Idle Extractor**
+
+This extension does not collect, store, or share any data from its users. We do not track your usage or interactions with the extension.
+
+For any questions or concerns, please contact us at <jakimpl@gmail.com>.

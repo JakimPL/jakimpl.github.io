@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Raid Calculator</title>
     <link rel="stylesheet" href="css/market_raid.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <script src="js/algorithm.js"></script>
     <script src="js/market_raid.js"></script>
     <script src="js/data_handler.js"></script>
@@ -66,9 +67,9 @@
         <span id="errorMessage">Error: Invalid input values.</span>
     </div>
 
-    <div class="bottleneck-container" id="bottleneckContainer" style="display:none;">
+    <div class="bottleneck container" id="bottleneckContainer" style="display:none;">
         <h3>Resource Bottlenecks</h3>
-        <canvas id="bottleneckTimeline"</canvas>
+        <canvas id="bottleneckTimeline"></canvas>
     </div>
 </div>
 
@@ -127,18 +128,25 @@
         });
     });
 
-    document.getElementById('numSmelters').value = '4';
-    document.getElementById('numCrafters').value = '2';
+    window.onload = function() {
+        document.getElementById('numSmelters').value = '4';
+        document.getElementById('numCrafters').value = '2';
 
-    window.addEventListener('resize', adjustCanvasSize);
-    window.addEventListener('load', adjustCanvasSize);
+        getWorkersFromURL();
+        getIncomeFromURL();
+        getRecipesFromURL();
 
-    updateItemList();
-    reattachDragEvents();
-    document.addEventListener('DOMContentLoaded', () => {
-        loadSessionData();
-        attachInputListeners();
-    });
+        window.addEventListener('resize', adjustCanvasSize);
+        window.addEventListener('load', adjustCanvasSize);
+
+        updateItemList();
+        reattachDragEvents();
+
+        // Attach input listeners only after handling income data
+        document.addEventListener('DOMContentLoaded', () => {
+            attachInputListeners();
+        });
+    };
 
 </script>
 </body>

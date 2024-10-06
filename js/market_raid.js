@@ -1,4 +1,3 @@
-let hasScrolled = false;
 let oreIncomes = [];
 let recipes = [];
 
@@ -69,17 +68,14 @@ function calculateMarketRaid() {
         document.getElementById('resultContainer').style.display = 'block';
         document.getElementById('errorContainer').style.display = 'none';
 
-        if (!hasScrolled) {
-            document.getElementById('resultContainer').scrollIntoView({ behavior: 'smooth' });
-            hasScrolled = true;
-        }
-
         document.getElementById('avgSmelters').textContent = (simulation.activeWorkers[Producer.SMELTER] / simulation.simulationTime).toFixed(2);
         document.getElementById('avgCrafters').textContent = (simulation.activeWorkers[Producer.CRAFTER] / simulation.simulationTime).toFixed(2);
 
         const canvas = document.getElementById('bottleneckTimeline');
         drawBottleneckTimeline(simulation, canvas);
         document.getElementById('bottleneckContainer').style.display = 'block';
+        document.getElementById('bottleneckContainer').scrollIntoView({ behavior: 'smooth' });
+
     } catch (error) {
         console.error(error);
         document.getElementById('errorMessage').textContent = error.message;
@@ -208,4 +204,87 @@ function drawBottleneckTimeline(simulation, canvas) {
         ctx.fillStyle = "black";
         ctx.fillText(resource, 5, y + barHeight / 2);
     });
+}
+
+function updateOreIncomes(incomeData) {
+    const oreIncomesContainer = document.getElementById('oreIncomesContainer');
+    oreIncomesContainer.innerHTML = '';
+
+    for (const [ore, income] of Object.entries(incomeData)) {
+        addOreIncome();
+        const oreRow = oreIncomesContainer.querySelector('.input-row:last-child');
+
+        oreRow.querySelector('.ore-name').value = ore;
+        oreRow.querySelector('.ore-amount').value = income;
+    }
+}
+
+function getIncomeFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const income = urlParams.get('income');
+
+    if (income) {
+        const incomeDict = parseIncomeData(income);
+        updateOreIncomes(incomeDict);
+    }
+}
+
+function parseIncomeData(incomeString) {
+    const incomePairs = incomeString.split(',');
+    const incomeDict = {};
+
+    incomePairs.forEach(pair => {
+        const [resource, amount] = pair.split(':');
+        if (resource && amount) {
+            incomeDict[resource] = parseFloat(amount);
+        }
+    });
+
+    return incomeDict;
+}
+
+function getRecipesFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const recipesParam = urlParams.get('recipes');
+
+    if (recipesParam) {
+        const recipesContainer = document.getElementById('recipesContainer');
+        recipesContainer.innerHTML = '';
+
+        const recipes = recipesParam.split(',');
+
+        recipes.forEach(recipeString => {
+            const [name, time, producer, price, ...requirementsArr] = recipeString.split(':');
+            addRecipe();
+
+            const recipeCard = document.querySelector('#recipesContainer .recipe-card:last-child');
+            recipeCard.querySelector('.recipe-name').value = decodeURIComponent(name);
+            recipeCard.querySelector('.recipe-time').value = time;
+            recipeCard.querySelector('.recipe-producer').value = decodeURIComponent(producer);
+            recipeCard.querySelector('.recipe-sell-price').value = price;
+
+            const requirementsContainer = recipeCard.querySelector('.requirementsContainer');
+            requirementsContainer.innerHTML = '';
+
+            requirementsArr.join(':').split(';').forEach(req => {
+                const [reqName, reqQuantity] = req.split(':');
+                addRequirement(recipeCard.querySelector('.button'));
+                const requirementRow = recipeCard.querySelector('.requirementsContainer .requirement-row:last-child');
+                requirementRow.querySelector('.requirement-name').value = decodeURIComponent(reqName);
+                requirementRow.querySelector('.requirement-quantity').value = reqQuantity;
+            });
+        });
+    }
+}
+
+function getWorkersFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const smelters = urlParams.get('smelters');
+    const crafters = urlParams.get('crafters');
+    if (smelters) {
+        document.getElementById('numSmelters').value = smelters;
+    }
+    if (crafters) {
+        document.getElementById('numCrafters').value = crafters;    
+    }
 }
